@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="encoding" value="UTF-8"/>
+    <property name="normal-pattern"
+              value="[%p][%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}][%C.%F:%L] %msg%n"/>
+    <property name="LOG_PATH" value="../log/ai"/>
+
+    <!-- 配置打印DEBUG级别日志的环境. 多个使用逗号隔开. -->
+    <springProfile name="dev,test,tmp,prod,bpmtest">
+        <!-- 如果需要,请自行开启spring或其他组件的debug级别 -->
+        <logger name="com.wlg.nl2sql" level="debug"/>
+    </springProfile>
+    <!-- 配置打印INFO级别日志的环境 -->
+    <springProfile name="prod">
+        <logger name="com.wlg.nl2sql" level="info" />
+    </springProfile>
+
+    <!-- 配置打印到控制台的环境 -->
+    <springProfile name="dev">
+        <!--控制台日志-->
+        <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${normal-pattern}</pattern>
+                <charset>${encoding}</charset>
+            </encoder>
+        </appender>
+
+        <root level="info">
+            <appender-ref ref="console"/>
+        </root>
+    </springProfile>
+
+    <!-- 配置输出日志到文件的环境 -->
+    <springProfile name="test,prod">
+        <appender name="file-default" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_PATH}/default.log</file>
+            <encoder>
+                <pattern>${normal-pattern}</pattern>
+                <charset>${encoding}</charset>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_PATH}/default.log.%d{yyyy-MM-dd}</fileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+        </appender>
+
+        <!--错误以及以上级别日志-->
+        <appender name="file-error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_PATH}/error.log</file>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>ERROR</level>
+            </filter>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>${LOG_PATH}/error.log.%d{yyyy-MM-dd}</FileNamePattern>
+                <MaxHistory>30</MaxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>${normal-pattern}</pattern>
+                <charset>${encoding}</charset>
+            </encoder>
+        </appender>
+
+        <root level="warn">
+            <appender-ref ref="file-default"/>
+            <appender-ref ref="file-error"/>
+        </root>
+    </springProfile>
+</configuration>
